@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tap Scroll</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,minimum-scale=1.0,maximum-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+
+	<div class="main">
+		<div class="main_pos">
+			<ul class="clearfix" id="main_ul">
+				<li v-for="item in list">{{ item }}<p></p></li>
+			</ul>
+		</div>
+		<ul class="clearfix" id="main_ul2" >
+			<li v-for="item in list">{{ item }}<p></p></li>
+			<li></li>
+		</ul>
+	</div>
+
+<script src="../js/jquery.js"></script>
+<script src="../js/vue.js"></script>
+<script src="jquery_scrollend.js"></script>
+<script type="text/javascript">
+	var vm = new Vue({
+		el: '.main',
+		data: {
+			list: []
+		}
+	})
+	for(var i = 0; i < 20; i ++){
+		vm.list.push(i);
+	}
+
+	/*
+	*	计算圆
+	*/
+	var li_w = 60;
+	var li_corner = 360.0 / vm.list.length;
+	var circle_r = li_w / 2 / Math.sin(Math.PI*li_corner/360); 
+	// 链条长度
+	var circle_length = vm.list.length * li_w;
+
+	Vue.nextTick(function(){
+		// 设置直径
+		$('#main_ul').css({'width': 2*circle_r+'px', 'height': 2*circle_r+'px'});
+		$('#main_ul li p').css({
+			'border-width': circle_r - $('#main_ul li').height() + 'px ' + li_w/2 + 'px 0 ' + li_w/2 +'px'
+		});
+		$('#main_ul li').css({
+			'transform-origin': li_w / 2 + 'px ' + circle_r + 'px',
+			'left': circle_r - li_w/2 + 'px'
+		});
+		$('#main_ul2').css({'width': $('.main').width(), 'height': $('.main').height()});
+		$('#main_ul2').find('li:last-child').css('width', $('#main_ul2').width());
+		// 1.绘制齿轮
+		var cor = 0;
+		$.each($('#main_ul li'), function(index, obj){
+			$(obj).css('transform', 'rotate(' + cor + 'deg)')
+			cor += li_corner;
+		})
+		// 2.绘制链条
+		$.each($('#main_ul2 li'), function(index, obj){
+			$(obj).css('left', li_w*index+'px')
+		})
+	})
+
+	var scrollLeft = 0;
+    var oneCorner = li_corner;
+    var corner = 0;
+	$('#main_ul2').on('scroll',function(){
+	    scrollLeft = $(this).scrollLeft();
+	    oneCorner = 1.0 * 360 / circle_length * 60;
+	    corner = -1.0 * scrollLeft * 360 / circle_length;
+	    $('#main_ul').css('transform', 'rotate(' + corner + 'deg)');
+	});
+
+	$('#main_ul2').on('scrollstop', function(e){
+		var yushu = scrollLeft % li_w;
+		if (yushu > li_w / 2) {
+			$(this).scrollLeft(scrollLeft + li_w - yushu);
+		}else{
+			$(this).scrollLeft(scrollLeft - yushu);
+		}
+	})
+</script>
+</body>
+</html>
